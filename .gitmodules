@@ -1,0 +1,9 @@
+[submodule "ECommons"]
+	path = ECommons
+	url = https://github.com/NightmareXIV/ECommons.git
+[submodule "ClickLib"]
+	path = ClickLib
+	url = https://github.com/Limiana/ClickLib.git
+[submodule "Dropbox"]
+	path = Dropbox
+	url = https://github.com/kawaii/Dropbox.git
