@@ -5,10 +5,15 @@ using System.IO;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin.Services;
 using EdenHall.Windows;
+using FFXIVClientStructs.FFXIV.Client.System.Framework;
+using ECommons;
+using ECommons.Configuration;
+using ECommons.SimpleGui;
+using ECommons.ImGuiMethods;
 
 namespace EdenHall;
-
-public sealed class Plugin : IDalamudPlugin
+#nullable disable
+public class Plugin : IDalamudPlugin
 {
     [PluginService] internal static IDalamudPluginInterface PluginInterface { get; private set; } = null!;
     [PluginService] internal static ITextureProvider TextureProvider { get; private set; } = null!;
@@ -16,26 +21,34 @@ public sealed class Plugin : IDalamudPlugin
     [PluginService] internal static IClientState ClientState { get; private set; } = null!;
     [PluginService] internal static IDataManager DataManager { get; private set; } = null!;
     [PluginService] internal static IPluginLog Log { get; private set; } = null!;
+    [PluginService] public static IObjectTable Objects { get; private set; }
+    [PluginService] public static IChatGui Chat { get; private set; }
+    [PluginService] public static IFramework Framework { get; private set; }
 
     private const string CommandName = "/ebj";
 
     public Configuration Configuration { get; init; }
 
     public readonly WindowSystem WindowSystem = new("EdenHall");
-    private ConfigWindow ConfigWindow { get; init; }
     private MainWindow MainWindow { get; init; }
-
+    public Configuration C { get; private set; }
+    internal TaskManager TaskManager;
+    internal Plugin P;
     public Plugin()
     {
-        Configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
-
+        ECommonsMain.Init(PluginInterface, this);
+        P = this;
+        C = EzConfig.Init<Configuration>();
+        EzConfigGui.Init(Draw);
+        // Configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
+        TaskManager = new(){};
         // you might normally want to embed resources and load them from the manifest stream
         var goatImagePath = Path.Combine(PluginInterface.AssemblyLocation.Directory?.FullName!, "goat.png");
 
-        ConfigWindow = new ConfigWindow(this);
-        MainWindow = new MainWindow(this, goatImagePath);
+        // ConfigWindow = new ConfigWindow(this);
+        MainWindow = new MainWindow(this);
 
-        WindowSystem.AddWindow(ConfigWindow);
+        // WindowSystem.AddWindow(ConfigWindow);
         WindowSystem.AddWindow(MainWindow);
 
         CommandManager.AddHandler(CommandName, new CommandInfo(OnCommand)
@@ -44,17 +57,11 @@ public sealed class Plugin : IDalamudPlugin
         });
 
         PluginInterface.UiBuilder.Draw += DrawUI;
-
-        // This adds a button to the plugin installer entry of this plugin which allows
-        // to toggle the display status of the configuration ui
-        PluginInterface.UiBuilder.OpenConfigUi += ToggleConfigUI;
-
         // Adds another button that is doing the same but for the main ui of the plugin
         PluginInterface.UiBuilder.OpenMainUi += ToggleMainUI;
 
         // Add a simple message to the log with level set to information
         // Use /xllog to open the log window in-game
-        // Example Output: 00:57:54.959 | INF | [EdenHall] ===A cool log message from Sample Plugin===
         Log.Information($"=== Started {PluginInterface.Manifest.Name}===");
     }
 
@@ -62,9 +69,9 @@ public sealed class Plugin : IDalamudPlugin
     {
         WindowSystem.RemoveAllWindows();
 
-        ConfigWindow.Dispose();
+        // ConfigWindow.Dispose();
         MainWindow.Dispose();
-
+        ECommonsMain.Dispose();
         CommandManager.RemoveHandler(CommandName);
     }
 
@@ -75,7 +82,11 @@ public sealed class Plugin : IDalamudPlugin
     }
 
     private void DrawUI() => WindowSystem.Draw();
-
-    public void ToggleConfigUI() => ConfigWindow.Toggle();
     public void ToggleMainUI() => MainWindow.Toggle();
+
+    void Draw()
+    {
+        ImGuiEx.SliderIntAsFloat("Delay before accepting, s", ref C.Accept_Trade_Delay, 0, 10000);
+        ImGuiNET.ImGui.SliderInt("Gil Min, >=", ref C.MinGil, 50000, 1000000);
+    }
 }

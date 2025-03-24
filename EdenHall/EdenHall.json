@@ -1,12 +1,9 @@
 {
-  "Author": "your name here",
-  "Name": "Sample Plugin",
+  "Author": "Allison",
+  "Name": "Eden Hall Plugin",
   "Punchline": "A short one-liner that shows up in /xlplugins.",
   "Description": "A description that shows up in /xlplugins. List any major slash-command(s).",
   "ApplicableVersion": "any",
   "Tags": [
-    "sample",
-    "plugin",
-    "goats"
   ]
 }

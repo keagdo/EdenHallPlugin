@@ -1,20 +1,14 @@
 ﻿using Dalamud.Configuration;
 using Dalamud.Plugin;
+using ECommons.Configuration;
 using System;
 
 namespace EdenHall;
 
-[Serializable]
-public class Configuration : IPluginConfiguration
+public class Configuration : IEzConfig
 {
-    public int Version { get; set; } = 0;
-
-    public bool IsConfigWindowMovable { get; set; } = true;
-    public bool SomePropertyToBeSavedAndWithADefault { get; set; } = true;
-
-    // the below exist just to make saving less cumbersome
-    public void Save()
-    {
-        Plugin.PluginInterface.SavePluginConfig(this);
-    }
+    public int Accept_Trade_Delay = 1000;
+    public int MinGil = 1;
+    public int DealerStandThreshold { get; internal set; }
+    public bool DealerHitOnSoft { get; internal set; }
 }
